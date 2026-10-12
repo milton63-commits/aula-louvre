@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Aula imersiva: Museu do Louvre</title>
+<script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+<style>
+  html,body{margin:0;height:100%;font-family:system-ui,Segoe UI,Roboto,sans-serif}
+  #topo{position:fixed;top:0;left:0;right:0;z-index:10;background:rgba(10,20,40,.85);color:#fff;padding:8px 12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  #topo h1{font-size:16px;margin:0 10px 0 0}
+  #topo button,#painel button,#topo a{background:#c9a227;color:#111;border:0;border-radius:6px;padding:6px 10px;font-size:14px;cursor:pointer;text-decoration:none}
+  #topo button.cena{background:#3a5a8c;color:#fff}
+  #painel{position:fixed;z-index:11;right:12px;bottom:12px;max-width:440px;max-height:60vh;overflow:auto;background:rgba(255,255,255,.96);border-radius:10px;padding:14px;box-shadow:0 4px 20px rgba(0,0,0,.4);display:none}
+  #painel img{max-width:120px;float:right;margin:0 0 8px 10px;border-radius:4px}
+  #painel h2{margin:0 0 8px;font-size:19px}
+  #painel p{font-size:15px;line-height:1.45}
+  #creditos{display:none;position:fixed;z-index:12;inset:60px 12px auto 12px;max-height:75vh;overflow:auto;background:#fff;padding:14px;border-radius:10px;font-size:13px}
+  @media (max-width:600px){#painel{left:8px;right:8px;max-width:none}}
+</style>
+</head>
+<body>
+<div id="topo">
+  <h1>🏛️ Museu do Louvre – Paris</h1>
+  <button class="cena" onclick="trocarCena('dia')">Pátio (dia, 360°)</button>
+  <button class="cena" onclick="trocarCena('noite')">Pirâmide à noite</button>
+  <span style="flex:1"></span>
+  <a href="https://www.louvre.fr/en/online-tours" target="_blank" rel="noopener">Bônus: tour virtual oficial ↗</a>
+  <button onclick="document.getElementById('creditos').style.display='block'">Créditos</button>
+</div>
+
+<div id="painel">
+  <img id="pImg" alt="">
+  <h2 id="pTit"></h2>
+  <p id="pTxt"></p>
+  <button onclick="ouvir()">🔊 Ouvir</button>
+  <button onclick="speechSynthesis.cancel()">⏹ Parar</button>
+  <button onclick="fechar()">✖ Fechar</button>
+</div>
+
+<div id="creditos">
+  <h2>Créditos das imagens (Wikimedia Commons)</h2>
+  <ul>
+    <li>Panorama 360° do Pátio Napoleão: “Louvre panosphere 20200303.jpg”, Daniel Kraft (Domob), <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank">CC BY-SA 3.0</a> – <a href="https://commons.wikimedia.org/wiki/File:Louvre_panosphere_20200303.jpg" target="_blank">fonte</a> (reduzido para 3840 px)</li>
+    <li>Panorama noturno: “Pyramide du louvre de nuit - pano 360.jpg”, Antony118, <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">CC BY-SA 4.0</a> – <a href="https://commons.wikimedia.org/wiki/File:Pyramide_du_louvre_de_nuit_-_pano_360.jpg" target="_blank">fonte</a> (reduzido)</li>
+    <li>Mona Lisa, Leonardo da Vinci – domínio público – <a href="https://commons.wikimedia.org/wiki/File:Mona_Lisa,_by_Leonardo_da_Vinci,_from_C2RMF_retouched.jpg" target="_blank">fonte</a></li>
+    <li>Vênus de Milo (Louvre Ma 399), foto de Marie-Lan Nguyen – domínio público – <a href="https://commons.wikimedia.org/wiki/File:Venus_de_Milo_Louvre_Ma399_n4.jpg" target="_blank">fonte</a></li>
+    <li>Vitória de Samotrácia (Louvre Ma 2369), foto de Marie-Lan Nguyen – domínio público – <a href="https://commons.wikimedia.org/wiki/File:Nike_of_Samothrake_Louvre_Ma2369_n4.jpg" target="_blank">fonte</a></li>
+    <li>Código de Hamurabi, foto de Rama – <a href="https://creativecommons.org/licenses/by-sa/3.0/fr/" target="_blank">CC BY-SA 3.0 FR</a> – <a href="https://commons.wikimedia.org/wiki/File:Code-de-Hammurabi-1.jpg" target="_blank">fonte</a></li>
+    <li>A Liberdade guiando o povo, Eugène Delacroix – domínio público – <a href="https://commons.wikimedia.org/wiki/File:Eug%C3%A8ne_Delacroix_-_Le_28_Juillet._La_Libert%C3%A9_guidant_le_peuple.jpg" target="_blank">fonte</a></li>
+  </ul>
+  <p>Observação: as panorâmicas mostram a área externa (Pátio Napoleão). As obras ficam dentro do museu; aqui elas aparecem como “janelas” flutuantes. Para andar pelas salas de verdade, use o tour virtual oficial do Louvre (abre em nova aba, pois o site do museu não permite ser incorporado em outras páginas).</p>
+  <p>Biblioteca 3D/RV: A-Frame 1.6.0 (MIT). Narração: voz do próprio navegador (speechSynthesis, pt-BR).</p>
+  <button onclick="document.getElementById('creditos').style.display='none'">Fechar</button>
+</div>
+
+<a-scene renderer="colorManagement:true" cursor="rayOrigin: mouse" raycaster="objects: .clicavel" loading-screen="dotsColor:#c9a227;backgroundColor:#0a1428" vr-mode-ui="enabled:true">
+  <a-assets timeout="30000">
+    <img id="panoDia" src="img/pano-piramide-dia.jpg" crossorigin="anonymous">
+    <img id="panoNoite" src="img/pano-piramide-noite.jpg" crossorigin="anonymous">
+    <img id="monalisa" src="img/monalisa.jpg">
+    <img id="venus" src="img/venus.jpg">
+    <img id="vitoria" src="img/vitoria.jpg">
+    <img id="hamurabi" src="img/hamurabi.jpg">
+    <img id="liberdade" src="img/liberdade.jpg">
+  </a-assets>
+  <a-sky id="ceu" src="#panoDia" rotation="0 -90 0"></a-sky>
+  <a-entity id="estacoes"></a-entity>
+  <a-entity id="painel3d" visible="false" position="0 1.6 -2.2"></a-entity>
+  <a-entity camera look-controls="reverseMouseDrag:true" wasd-controls="enabled:false" position="0 1.6 0"></a-entity>
+  <a-entity laser-controls="hand: right" raycaster="objects: .clicavel; far: 30"></a-entity>
+  <a-entity laser-controls="hand: left" raycaster="objects: .clicavel; far: 30"></a-entity>
+</a-scene>
+
+<script>
+const ESTACOES = [
+ {id:'piramide', tit:'A Pirâmide e o Palácio do Louvre', img:null, cor:'#c9a227',
+  txt:'Você está no Pátio Napoleão, no centro do Palácio do Louvre, em Paris. A pirâmide de vidro e metal foi projetada pelo arquiteto sino-americano I. M. Pei e inaugurada em 1989, como parte do projeto “Grande Louvre”, do presidente François Mitterrand. Ela é a entrada principal do museu e tem cerca de 21 metros de altura. Na época, muita gente criticou o contraste entre o vidro moderno e o palácio antigo; hoje ela é um símbolo de Paris. O lugar tem uma longa história: começou como uma fortaleza medieval construída pelo rei Filipe Augusto por volta de 1190, depois virou residência dos reis da França. Durante a Revolução Francesa, em 1793, o palácio foi aberto ao público como museu. Com Napoleão Bonaparte, passou a se chamar Museu Napoleão e recebeu muitas obras levadas de países conquistados; boa parte delas foi devolvida depois da derrota de Napoleão, em 1815.'},
+ {id:'monalisa', tit:'Mona Lisa (Leonardo da Vinci)', img:'monalisa', cor:'#8c5a3a',
+  txt:'A Mona Lisa, também chamada de Gioconda, foi pintada por Leonardo da Vinci, artista do Renascimento italiano, a partir de cerca de 1503. É uma pintura a óleo sobre um painel de madeira, e é pequena: mais ou menos 77 por 53 centímetros. Leonardo levou a obra para a França, e ela passou a fazer parte da coleção do rei Francisco I. Em 1911 ela foi roubada do Louvre por Vincenzo Peruggia e só foi recuperada em 1913, na Itália. O roubo ajudou a torná-la a pintura mais famosa do mundo. Repare na técnica do sfumato: contornos suaves, como se houvesse uma névoa, sem linhas duras.'},
+ {id:'venus', tit:'Vênus de Milo', img:'venus', cor:'#6a7f9a',
+  txt:'A Vênus de Milo é uma estátua grega de mármore que provavelmente representa a deusa Afrodite, chamada de Vênus pelos romanos. Ela foi encontrada em 1820 na ilha de Milos, no mar Egeu, e pertence ao período helenístico, sendo datada aproximadamente do final do século II antes de Cristo. Tem pouco mais de 2 metros de altura. Os braços nunca foram encontrados, e até hoje os pesquisadores discutem qual seria a posição original deles.'},
+ {id:'vitoria', tit:'Vitória de Samotrácia', img:'vitoria', cor:'#4f7a6a',
+  txt:'A Vitória de Samotrácia representa Nice, a deusa grega da vitória, pousando na proa de um navio, com as asas abertas e as roupas agitadas pelo vento. Foi esculpida em mármore por volta de 190 antes de Cristo, no período helenístico, e encontrada em 1863 na ilha de Samotrácia, na Grécia, pelo diplomata francês Charles Champoiseau. No Louvre, ela fica no alto da grande Escadaria Daru. Pense: por que um monumento à vitória teria a forma de um navio?'},
+ {id:'hamurabi', tit:'Código de Hamurabi', img:'hamurabi', cor:'#5a4a3a',
+  txt:'O Código de Hamurabi está gravado em uma estela, um grande bloco de pedra de basalto com mais de 2 metros de altura. Ela foi feita na Mesopotâmia durante o reinado de Hamurabi, rei da Babilônia, por volta de 1792 a 1750 antes de Cristo. O texto, em escrita cuneiforme e língua acadiana, reúne cerca de 280 leis, como a famosa ideia de “olho por olho”. As punições mudavam de acordo com a posição social da pessoa. A estela foi encontrada em 1901 e 1902 em Susa, no atual Irã, por uma expedição arqueológica francesa: séculos depois de Hamurabi, ela tinha sido levada para lá como espólio de guerra.'},
+ {id:'liberdade', tit:'A Liberdade guiando o povo (Delacroix)', img:'liberdade', cor:'#8c2a2a',
+  txt:'A Liberdade guiando o povo foi pintada por Eugène Delacroix em 1830. Atenção: ela não mostra a Revolução de 1789, e sim a Revolução de Julho de 1830, quando o povo de Paris se levantou durante três dias contra o rei Carlos X. A mulher com a bandeira tricolor e o barrete frígio é uma alegoria, ou seja, uma figura que representa uma ideia: a Liberdade. Ela inspirou a imagem de Marianne, símbolo da República Francesa. Repare nas pessoas de diferentes grupos sociais lutando lado a lado.'}
+];
+
+// texto em canvas (funciona com acentos dentro do óculos de RV)
+function cartaoCanvas(titulo, texto, cor, w=1024, h=512, fonteT=56, fonte=30){
+  const c=document.createElement('canvas'); c.width=w; c.height=h; const g=c.getContext('2d');
+  g.fillStyle='rgba(15,25,45,0.92)'; g.fillRect(0,0,w,h);
+  g.fillStyle=cor; g.fillRect(0,0,w,16);
+  g.fillStyle='#fff'; g.font='bold '+fonteT+'px sans-serif';
+  let y=quebra(g,titulo,40,40+fonteT,w-80,fonteT*1.15);
+  if(texto){ g.font=fonte+'px sans-serif'; g.fillStyle='#e8e8e8'; quebra(g,texto,40,y+fonte*1.4,w-80,fonte*1.35); }
+  return c;
+}
+function quebra(g,t,x,y,max,lh){ let linha=''; for(const p of t.split(' ')){ const tes=linha+p+' '; if(g.measureText(tes).width>max && linha){ g.fillText(linha,x,y); linha=p+' '; y+=lh;} else linha=tes; } g.fillText(linha,x,y); return y; }
+function texturaDe(canvas){ return canvas.toDataURL('image/png'); }
+
+const cont=document.getElementById('estacoes');
+ESTACOES.forEach((e,i)=>{
+  const ang=(i/ESTACOES.length)*2*Math.PI, r=4.5;
+  const x=Math.sin(ang)*r, z=-Math.cos(ang)*r;
+  const el=document.createElement('a-plane');
+  el.setAttribute('class','clicavel');
+  el.setAttribute('width',1.6); el.setAttribute('height',0.5);
+  el.setAttribute('position',`${x.toFixed(2)} 1.4 ${z.toFixed(2)}`);
+  el.setAttribute('rotation',`0 ${(-ang*180/Math.PI).toFixed(1)} 0`);
+  el.setAttribute('material',{src:texturaDe(cartaoCanvas((i+1)+'. '+e.tit.split(' (')[0],'▶ clique / aponte',e.cor,1024,320,64,36)),shader:'flat',transparent:true});
+  el.setAttribute('animation__hover',{property:'scale',to:'1.1 1.1 1',startEvents:'mouseenter',dur:150});
+  el.setAttribute('animation__out',{property:'scale',to:'1 1 1',startEvents:'mouseleave',dur:150});
+  el.addEventListener('click',()=>abrir(i));
+  cont.appendChild(el);
+});
+
+let atual=null;
+function abrir(i){
+  const e=ESTACOES[i]; atual=e; speechSynthesis.cancel();
+  document.getElementById('pTit').textContent=e.tit;
+  document.getElementById('pTxt').textContent=e.txt;
+  const im=document.getElementById('pImg'); if(e.img){im.src='img/'+e.img+'.jpg';im.style.display='';}else im.style.display='none';
+  document.getElementById('painel').style.display='block';
+  // painel 3D (visível também dentro do óculos)
+  const ang=(i/ESTACOES.length)*2*Math.PI;
+  const p=document.getElementById('painel3d'); p.innerHTML='';
+  p.setAttribute('position',`${(Math.sin(ang)*2.4).toFixed(2)} 1.6 ${(-Math.cos(ang)*2.4).toFixed(2)}`);
+  p.setAttribute('rotation',`0 ${(-ang*180/Math.PI).toFixed(1)} 0`);
+  const txt=document.createElement('a-plane');
+  txt.setAttribute('width',e.img?1.7:2.2); txt.setAttribute('height',e.img?1.7:1.6);
+  txt.setAttribute('position',e.img?'0.45 0 0':'0 0 0');
+  txt.setAttribute('material',{src:texturaDe(cartaoCanvas(e.tit,e.txt,e.cor,1024,1024,46,28)),shader:'flat',transparent:true});
+  p.appendChild(txt);
+  if(e.img){ const a=document.getElementById(e.img); const h=1.5, w=h*a.naturalWidth/a.naturalHeight;
+    const q=document.createElement('a-image'); q.setAttribute('src','#'+e.img); q.setAttribute('height',h); q.setAttribute('width',w); q.setAttribute('position',`${(-0.45-w/2).toFixed(2)} 0 0`); p.appendChild(q); }
+  const bOuvir=botao3d('🔊 Ouvir','#c9a227',-0.5,ouvir), bFechar=botao3d('✖ Fechar','#777',0.5,fechar);
+  p.appendChild(bOuvir); p.appendChild(bFechar);
+  p.setAttribute('visible',true);
+}
+function botao3d(rot,cor,x,fn){ const c=document.createElement('canvas');c.width=256;c.height=96;const g=c.getContext('2d');g.fillStyle=cor;g.fillRect(0,0,256,96);g.fillStyle='#111';g.font='bold 40px sans-serif';g.textAlign='center';g.fillText(rot,128,62);
+  const b=document.createElement('a-plane'); b.setAttribute('class','clicavel'); b.setAttribute('width',0.6); b.setAttribute('height',0.22); b.setAttribute('position',`${x} -1.0 0.01`); b.setAttribute('material',{src:c.toDataURL(),shader:'flat'}); b.addEventListener('click',fn); return b; }
+function fechar(){ speechSynthesis.cancel(); document.getElementById('painel').style.display='none'; document.getElementById('painel3d').setAttribute('visible',false); document.getElementById('painel3d').innerHTML=''; }
+function ouvir(){
+  if(!atual) return; if(!('speechSynthesis' in window)){alert('Este navegador não tem narração por voz.');return;}
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(atual.tit+'. '+atual.txt); u.lang='pt-BR'; u.rate=0.95;
+  const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.replace('_','-').toLowerCase().startsWith('pt-br')) || speechSynthesis.getVoices().find(v=>v.lang&&v.lang.toLowerCase().startsWith('pt'));
+  if(v) u.voice=v; speechSynthesis.speak(u);
+}
+if('speechSynthesis' in window) speechSynthesis.onvoiceschanged=()=>{};
+function trocarCena(c){
+  const s=document.getElementById('ceu');
+  if(c==='dia'){ s.setAttribute('src','#panoDia'); s.setAttribute('theta-start',0); s.setAttribute('theta-length',180); }
+  else { // panorama cilíndrico 360° x ~87°
+    s.setAttribute('src','#panoNoite'); s.setAttribute('theta-start',46.6); s.setAttribute('theta-length',86.8); }
+}
+</script>
+</body>
+</html>
